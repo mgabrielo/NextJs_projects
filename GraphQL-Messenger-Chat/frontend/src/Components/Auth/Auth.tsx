@@ -5,7 +5,7 @@ import { useState } from "react";
 import {useMutation} from '@apollo/client';
 import UserOperations from '../../graphql/operations/user';
 import { CreateUsernameData, CreateUsernameVariables } from "../../util/types";
-
+import {toast} from 'react-hot-toast';
 interface IAuthProps {
     session:Session | null;
     reloadSession: ()=>void
@@ -23,9 +23,20 @@ const Auth: React.FC<IAuthProps> = ({session, reloadSession}) => {
         }
         try {
             // create Mutation to send username to GraphQL API
-            await createUsername({variables: { username }})
-        } catch (error) {
-            
+            const {data} =await createUsername({variables: { username }})
+            if(!data?.createUsername){
+                throw new Error();
+            }
+
+            if(data?.createUsername.error){
+                const {createUsername:{error}}= data;
+                throw new Error(error)
+            }
+            //reload if username creation is successful
+            toast.success(' 🎉 Username Created Successfully 🎉')
+            reloadSession();
+        } catch (error:any) {
+            console.log('error:', error?.message)
         }
     }
   return(

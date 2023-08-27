@@ -6,15 +6,19 @@ import express from "express";
 import http from "http";
 import cors from "cors";
 import pkg from "body-parser";
+import { PrismaClient } from "@prisma/client";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { getSession } from "next-auth/react";
 import * as dotenv from "dotenv";
+
 const { json } = pkg;
-// import { typeDefs, resolvers } from "./schema";
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
+import { GraphQlContext, Session } from "./utils/types";
 
 interface MyContext {
   token?: String;
+  name?: String;
 }
 async function main() {
   dotenv.config();
@@ -32,13 +36,24 @@ async function main() {
     origin: process.env.CLIENT_ORIGIN,
     credentials: true,
   };
+
+  {
+    /*Context Parameters*/
+  }
+  const prisma = new PrismaClient();
+  // const pubsub
+
   await server.start();
   app.use(
     "/graphql",
     cors<cors.CorsRequest>(corsOptions),
     json(),
     expressMiddleware(server, {
-      context: async ({ req }) => ({ token: req.headers.token }),
+      context: async ({ req, res }): Promise<GraphQlContext> => {
+        const session = (await getSession({ req })) as Session;
+        // console.log("context session:", session);
+        return { session, prisma };
+      },
     })
   );
 

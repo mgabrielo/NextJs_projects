@@ -5,10 +5,11 @@ import Auth from '../Components/Auth/Auth'
 import Chat from '../Components/Chat/Chat'
 const Home: NextPage = () => {
   const {data :session}= useSession()
-  // console.log('data :', data)
+  console.log('session-data :', session)
 
   const reloadSession =()=>{
-
+    const event =new Event("visibliltychange");
+    document.dispatchEvent(event);
   }
   return (
     <Box>
