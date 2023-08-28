@@ -39,6 +39,11 @@ const Auth: React.FC<IAuthProps> = ({session, reloadSession}) => {
             console.log('error:', error?.message)
         }
     }
+
+    const Login =( value:any)=>{
+        // e.preventDefault();
+        signIn(value)
+    }
   return(
     <Center height={'100vh'}>
         <Stack align={'center'} spacing={8}>
@@ -52,7 +57,7 @@ const Auth: React.FC<IAuthProps> = ({session, reloadSession}) => {
                 ):(
                     <>
                     <Text fontSize={'3xl'}>MessengerChat</Text>
-                    <Button onClick={()=>signIn("google")} leftIcon={<Image height={'20px'} src="/images/googlelogo.png" />}>Continue With Google</Button>
+                    <Button onClick={(e)=>Login('google')} leftIcon={<Image height={'20px'} src="/images/googlelogo.png" />}>Continue With Google</Button>
                     </>
                 )
             }
