@@ -33,8 +33,8 @@ const Auth: React.FC<IAuthProps> = ({session, reloadSession}) => {
                 throw new Error(error)
             }
             //reload if username creation is successful
-            toast.success(' 🎉 Username Created Successfully 🎉')
             reloadSession();
+            toast.success(' 🎉 Username Created Successfully 🎉')
         } catch (error:any) {
             console.log('error:', error?.message)
         }
@@ -47,7 +47,7 @@ const Auth: React.FC<IAuthProps> = ({session, reloadSession}) => {
                     <>
                     <Text fontSize={'3xl'}> Create Username</Text>
                     <Input placeholder="Enter your username" value={username} onChange={(e)=> setUserName(e.target.value)}/>
-                    <Button width={'100%'} onClick={onSubmit}>Save</Button>
+                    <Button isLoading={loading} width={'100%'} onClick={onSubmit}>Save</Button>
                     </>
                 ):(
                     <>
