@@ -8,6 +8,7 @@ import { CreateConversationInput, CreateConverstaionData, SearchUserData, Search
 import UserSearchList from './UserSearchList';
 import Participants from './Participants';
 import { Session } from 'next-auth';
+import { useRouter } from 'next/router';
 
 interface ModalProps {
     isOpen :boolean;
@@ -16,6 +17,7 @@ interface ModalProps {
 }
 
 const ConversationModal:FC<ModalProps> =({isOpen, onClose, session})=> {
+    const router = useRouter();
     const [username, setUsername]= useState('')
     const [participants, setParticipants] = useState<Array<SearchedUser>>([])
     const [searchUsers, {data, loading, error}]= useLazyQuery<SearchUserData, SearchUserInput>(UserOperations.Queries.searchUsers)
@@ -39,7 +41,20 @@ const ConversationModal:FC<ModalProps> =({isOpen, onClose, session})=> {
             const {data} = await createConversation({
                 variables: {participantIds: participants_Ids}
             })
+            
             console.log('here is convo data:',data)
+
+            if(!data?.createConversation){
+                throw new Error('failed to create conversation')
+            }
+
+            const { createConversation:{conversationId} }=data
+            router.push({query:{conversationId}});
+
+            //clear state and close modal
+            setParticipants([]);
+            setUsername('');
+            onClose();
         } catch (error:any) {
             console.log('create-conversation-error:', error)
             toast.error(error?.message)

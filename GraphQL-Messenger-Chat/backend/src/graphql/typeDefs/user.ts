@@ -1,6 +1,15 @@
 import gql from "graphql-tag";
 
 const typeDefs = gql`
+  type User {
+    id: String
+    name: String
+    email: String
+    emailVerified: Boolean
+    image: String
+    username: String
+  }
+
   type SearchedUser {
     id: String
     username: String

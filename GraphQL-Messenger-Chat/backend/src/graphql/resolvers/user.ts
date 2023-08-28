@@ -1,3 +1,4 @@
+// @ts-ignore
 import type { User } from "@prisma/client";
 import { GraphQLError } from "graphql";
 import { CreateUsernameResponse, GraphQlContext } from "../../utils/types";

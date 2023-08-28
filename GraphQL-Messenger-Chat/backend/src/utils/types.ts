@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import Prisma from "@prisma/client";
 import { ISODateString } from "next-auth";
 
 export interface GraphQlContext {
@@ -25,3 +26,7 @@ export interface CreateUsernameResponse {
   success?: boolean;
   error?: string;
 }
+
+// for Conversations
+
+// export type ConversationPopulated
