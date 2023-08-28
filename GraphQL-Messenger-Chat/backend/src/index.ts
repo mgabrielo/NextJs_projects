@@ -10,11 +10,14 @@ import { PrismaClient } from "@prisma/client";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { getSession } from "next-auth/react";
 import * as dotenv from "dotenv";
-
-const { json } = pkg;
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/lib/use/ws";
+import { PubSub } from "graphql-subscriptions";
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
-import { GraphQlContext, Session } from "./utils/types";
+import { GraphQlContext, Session, SubscriptionContext } from "./utils/types";
+
+const { json } = pkg;
 
 interface MyContext {
   token?: String;
@@ -24,24 +27,59 @@ async function main() {
   dotenv.config();
   const app = express();
   const httpServer = http.createServer(app);
+  const wsServer = new WebSocketServer({
+    // This is the `httpServer` we created in a previous step.
+    server: httpServer,
+    // Pass a different path here if app.use
+    // serves expressMiddleware at a different path
+    path: "/graphql/subscriptions",
+  });
   const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
   });
+  {
+    /*Context Parameters*/
+  }
+  const prisma = new PrismaClient();
+  const pubsub = new PubSub();
+  const serverCleanup = useServer(
+    {
+      schema,
+      context: async (ctx: SubscriptionContext): Promise<GraphQlContext> => {
+        if (ctx.connectionParams && ctx.connectionParams.session) {
+          const { session } = ctx.connectionParams;
+
+          return { session, prisma, pubsub };
+        }
+        return { session: null, prisma, pubsub };
+      },
+    },
+    wsServer
+  );
+
   const server = new ApolloServer<MyContext>({
     schema,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
   const corsOptions = {
     origin: process.env.CLIENT_ORIGIN,
     credentials: true,
   };
-
-  {
-    /*Context Parameters*/
-  }
-  const prisma = new PrismaClient();
-  // const pubsub
 
   await server.start();
   app.use(
@@ -52,7 +90,7 @@ async function main() {
       context: async ({ req, res }): Promise<GraphQlContext> => {
         const session = (await getSession({ req })) as Session;
         // console.log("context session:", session);
-        return { session, prisma };
+        return { session, prisma, pubsub };
       },
     })
   );

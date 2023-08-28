@@ -1,9 +1,6 @@
 import { GraphQLError } from "graphql";
 import { GraphQlContext } from "../../utils/types";
-// import { PrismaClient } from "@prisma/client";
-// import { PrismaClient, PromiseReturnType } from "@prisma/client";
-// const {Prisma}  = require('@prisma/client')
-// Prisma.Conservation
+
 const resolvers = {
   Query: {
     conversations: async (_: any, __: any, context: GraphQlContext) => {
@@ -69,7 +66,7 @@ const resolvers = {
       context: GraphQlContext
     ): Promise<{ conversationId: string }> => {
       //   console.log("conversation resolver args:", args);
-      const { session, prisma } = context;
+      const { session, prisma, pubsub } = context;
       const { participantIds } = args;
 
       if (!session?.user) {
@@ -114,6 +111,11 @@ const resolvers = {
             },
           },
         });
+
+        // emit subscription
+        pubsub.publish("Conversation_Created", {
+          conversationCreated: conversation,
+        });
         return {
           conversationId: conversation.id,
         };
@@ -121,6 +123,14 @@ const resolvers = {
         console.log("create conversation error", error);
         throw new GraphQLError("Error Creating Conversation");
       }
+    },
+  },
+  Subscription: {
+    conversationCreated: {
+      subscribe: (_: any, __: any, context: GraphQlContext) => {
+        const { pubsub } = context;
+        return pubsub.asyncIterator(["Conversation_Created"]);
+      },
     },
   },
 };
