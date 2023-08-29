@@ -5,12 +5,15 @@ import ConversationList from './ConversationList';
 import { useQuery } from '@apollo/client';
 import ConversationsOperation from '../../../graphql/operations/conversation';
 import { ConversationsData } from '../../../util/types';
+import { useRouter } from 'next/router';
 
 interface IConversationsWrapperProps {
      session:Session;
 }
 
 const ConversationsWrapper: FC<IConversationsWrapperProps> = ({session}) => {
+    const router = useRouter()
+    const {query : {conversationId}} = router
     const {
         data: conversationsData, 
         error:conversationsError, 
@@ -18,8 +21,10 @@ const ConversationsWrapper: FC<IConversationsWrapperProps> = ({session}) => {
         subscribeToMore
     } = useQuery<ConversationsData >(ConversationsOperation.Queries.conversations)
     
-    console.log('conversationsdata:' , conversationsData)
-
+    // console.log('conversationsdata:' , conversationsData)
+    const onViewConversations=async (conversationId:string)=>{
+        router.push({query:{conversationId}})
+    }
     const  subscribeToNewConversation =()=>{
         subscribeToMore({
             document:ConversationsOperation.Subscriptions.conversationCreated,
@@ -27,7 +32,7 @@ const ConversationsWrapper: FC<IConversationsWrapperProps> = ({session}) => {
                 if(!subscriptionData.data){
                     return prev;
                 }
-                console.log(subscriptionData)
+                // console.log(subscriptionData)
                 const newConversation =subscriptionData.data.conversationCreated;
 
                 return Object.assign({}, prev, {
@@ -42,9 +47,9 @@ const ConversationsWrapper: FC<IConversationsWrapperProps> = ({session}) => {
         subscribeToNewConversation()
     },[])
   return (
-    <Box width={{ base: '100%', md: '400px'}} border={"1px solid red"} bg={'whiteAlpha.50'} py={6} px={3}>
+    <Box width={{ base: '100%', md: '400px'}} display={{base: conversationId ? 'none' : 'flex', md: 'flex'}} border={"1px solid red"} bg={'whiteAlpha.50'} py={6} px={3}>
        
-        <ConversationList session={session} conversations = {conversationsData?.conversations || []}/>
+        <ConversationList session={session} onViewConversation={onViewConversations} conversations = {conversationsData?.conversations || []}/>
     </Box>
   );
 };
