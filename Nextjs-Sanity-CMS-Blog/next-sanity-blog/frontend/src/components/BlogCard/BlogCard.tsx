@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import blogCardClassNames from './blogCardClassNames';
+import Link from 'next/link';
 
 interface IBlogCardProps {
     title:string,
@@ -7,12 +8,13 @@ interface IBlogCardProps {
     image:string,
     author:string,
     date:string,
+    slug: string
 }
 
-const BlogCard: React.FC<IBlogCardProps> = ({title, description, image, author, date}) => {
+const BlogCard: React.FC<IBlogCardProps> = ({title, description, image, author, date, slug}) => {
 
   return(
-    // <Link href={`/blog/${slug}`}>
+    <Link href={`/blog/${slug}`}>
       <div className={blogCardClassNames.card}>
         <div className={blogCardClassNames.imageContainer}>
           <Image
@@ -41,7 +43,7 @@ const BlogCard: React.FC<IBlogCardProps> = ({title, description, image, author, 
           </div>
         </div>
       </div>
-    // </Link>
+    </Link>
   ) ;
 };
 

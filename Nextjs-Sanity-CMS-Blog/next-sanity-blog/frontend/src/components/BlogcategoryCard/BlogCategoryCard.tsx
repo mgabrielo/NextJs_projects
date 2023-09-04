@@ -12,7 +12,7 @@ interface IBlogCategoryCardProps {
 const BlogCategoryCard: React.FC<IBlogCategoryCardProps> = ({name, slug, description, image}) => {
 
   return(
-    <Link href={`/blog/${slug}`}>
+    <Link href={`/category/${slug}`}>
         <div className={blogCategoryCardClassNames.categoryCard}>
             <Image src={image} alt={name} width={200} height={200} className={blogCategoryCardClassNames.categoryImage}/>
             <h3 className={blogCategoryCardClassNames.categoryName}>{name}</h3>

@@ -4,13 +4,17 @@ import Image from 'next/image';
 import BlogCard from '@/components/BlogCard/BlogCard';
 import { NextPage, NextPageContext } from 'next';
 import Blog from '@/models/blog';
+import client from '@/lib/sanity';
+import { Category } from '@/models/categories';
 
 interface IBlogProps {
-  blogContent:Blog[]
+  blogsPost:Blog[]
+  categories: Category[]
 }
 
 const Blog: NextPage<IBlogProps> = (props) => {
-  const {blogContent} = props
+  const {categories, blogsPost} = props
+  console.log(blogsPost)
   // const [blogData, setBlogData] = useState([])
 
   // useEffect(()=>{
@@ -30,13 +34,17 @@ const Blog: NextPage<IBlogProps> = (props) => {
         Lorem ipsum dolor sit amet,  consectetur adipiscing elit, sed do eiusmod tempor 
         </p>
         <div className={blogSectionClasses.categoriesContainer}>
-          <BlogCategoryCard
-          key={'1'}
-          description='sldkjf jkqedfe sajlkdf'
-          image={'https://images.pexels.com/photos/262508/pexels-photo-262508.jpeg?auto=compress&cs=tinysrgb&w=600'}
-          name='sanity blog'
-          slug='sanity-blog'
-          />
+          {
+            categories.map((category)=>(
+              <BlogCategoryCard
+              key={category.name}
+              description={category.description}
+              image={category.image}
+              name={category.name}
+              slug={category.name}
+              />
+            ))
+          }
         </div>
     </section>
     <div className={featuredPostSectionClasses.container}>
@@ -75,15 +83,15 @@ const Blog: NextPage<IBlogProps> = (props) => {
     </div>
 
     <div className="grid gap-6 md:grid-cols-2">
-        {blogContent?.map((blog:Blog) => (
+        {blogsPost.map((blog:any) => (
           <BlogCard
-            key={blog.title}
-            author={blog.author}
-            date={blog.date}
-            description={blog.description}
-            image={blog.image}
-            title={blog.title}
-            // slug={blog.slug.current}
+            key={blog?.title}
+            author={blog?.author}
+            date={blog?.date}
+            description={blog?.description}
+            image={blog?.image.URL}
+            title={blog?.title}
+            slug={blog.slug.current}
           />
          ))}
       </div>
@@ -117,49 +125,32 @@ const featuredPostSectionClasses = {
 export default Blog;
 
 export async function getStaticProps(context:NextPageContext) {
+  const categoryQuery=`*[_type == "category"] {
+    name ,
+    slug {current},
+    image,
+    description,
+    _id
+  }`
 
-  const blogContent = [
-    {
-      image:
-        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title: "Lorem ipsum dolor sit amet",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla malesuada velit eu enim facilisis, at varius nulla congue. Vestibulum pharetra urna euismod, hendrerit dolor eget, bibendum purus.",
-      author: "John Doe",
-      date: "April 25, 2023",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title: "Praesent id velit nec felis congue suscipit eu et ipsum",
-      description:
-        "Praesent id velit nec felis congue suscipit eu et ipsum. Aliquam congue mi eu urna efficitur vestibulum. Donec euismod, ex ut suscipit tristique, nibh nibh venenatis nulla, quis aliquam neque ex a nunc.",
-      author: "Jane Smith",
-      date: "April 23, 2023",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title: "Etiam cursus dui a neque vulputate consectetur",
-      description:
-        "Etiam cursus dui a neque vulputate consectetur. In ultrices eros quis enim consectetur, vitae gravida tellus hendrerit. Ut vel efficitur sapien. Sed rhoncus hendrerit sapien vitae venenatis.",
-      author: "Mike Johnson",
-      date: "April 20, 2023",
-    },
-    {
-      image:
-        "https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80",
-      title:
-        "Suspendisse potenti. Fusce fermentum lorem et est elementum, a pharetra turpis tincidunt.",
-      description:
-        "Suspendisse potenti. Fusce fermentum lorem et est elementum, a pharetra turpis tincidunt. Nam porttitor nisi nec leo molestie, eu ullamcorper velit malesuada. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce vel velit eget elit lobortis elementum non eget elit.",
-      author: "Sarah Lee",
-      date: "April 18, 2023",
-    },
-  ];
+
+  const categories = await client.fetch(categoryQuery);
+
+  const  blogQuery =`*[_type == "blog"] {
+    description,
+    title,
+    slug {current},
+    image {URL},
+    isFeatured,
+    date,
+    _id
+  }`
+
+  const blogsPost = await client.fetch(blogQuery);
+
 
   return{
-    props:{blogContent},
+    props:{blogsPost, categories},
     revalidate:3600,
   }
   
