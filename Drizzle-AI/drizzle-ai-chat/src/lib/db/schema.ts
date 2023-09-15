@@ -18,7 +18,7 @@ export const chats = pgTable("chats", {
   userId: varchar("user_id", { length: 256 }).notNull(),
   fileKey: text("file_key").notNull(),
 });
-
+export type DrizzleChat = typeof chats.$inferSelect;
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
   chat_id: integer("chat_id")
