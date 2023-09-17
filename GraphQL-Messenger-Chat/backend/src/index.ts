@@ -96,9 +96,9 @@ async function main() {
   );
 
   await new Promise<void>((resolve) =>
-    httpServer.listen({ port: 5000 }, resolve)
+    httpServer.listen({ port: 5001 }, resolve)
   );
-  console.log(`🚀 Server ready at http://localhost:5000/graphql`);
+  console.log(`🚀 Server ready at http://localhost:5001/graphql`);
 }
 
 main().catch((err) => console.log(err));

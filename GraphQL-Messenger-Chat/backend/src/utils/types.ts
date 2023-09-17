@@ -34,6 +34,17 @@ export interface CreateUsernameResponse {
   error?: string;
 }
 
+export interface sendMessageArguments {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  body: string;
+}
+
+export interface MessageSentSubscriptionPayload {
+  messageSent: any;
+}
+
 // for Conversations
 
 // export type ConversationPopulated

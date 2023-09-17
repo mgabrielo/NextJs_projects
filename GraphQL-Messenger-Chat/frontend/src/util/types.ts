@@ -37,3 +37,12 @@ export interface CreateConverstaionData {
 export interface CreateConversationInput {
   participantIds: Array<string>;
 }
+
+//Messages
+export interface MessagesData {
+  messages: Array<any>;
+}
+
+export interface MessagesVariables {
+  conversationId: string;
+}
